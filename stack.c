@@ -36,7 +36,7 @@ int init_stack(stack_t **stack)
 
 	s = malloc(sizeof(stack_t));
 	if (s == NULL)
-		return (malloc_error());
+		return (malloc_err());
 
 	s->n = STACK;
 	s->prev = NULL;

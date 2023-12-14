@@ -9,7 +9,7 @@ void pall(stack_t **stack, unsigned int line_number);
  */
 void push(stack_t **stack,unsigned int line_number)
 {
-	stack-t *temp, *new_node;
+	stack_t *temp, *new_node;
 	int i;
 
 	new_node = malloc(sizeof(stack_t));
@@ -19,7 +19,7 @@ void push(stack_t **stack,unsigned int line_number)
 		set_op_tok_err(malloc_err());
 		return;
 	}
-	if (op_toks[1] == NULLL)
+	if (op_toks[1] == NULL)
 	{
 		set_op_tok_err(no_int_err(line_number));
 		return;
@@ -34,7 +34,7 @@ void push(stack_t **stack,unsigned int line_number)
 			return;
 		}
 	}
-	new->n = atoi(op_toks[1]);
+	new_node->n = atoi(op_toks[1]);
 
 	if (check_mode(*stack) == STACK)
 	{

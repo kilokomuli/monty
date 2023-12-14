@@ -1,6 +1,8 @@
 #include "monty.h"
 #include <string.h>
+#include <stdio.h>
 
+void free_tokens(void);
 unsigned int token_arr_len(void);
 int empty_line(char *line, char *delims);
 void (*get_op_func(char *opcode))(stack_t**, unsigned int);
@@ -112,7 +114,7 @@ int run_monty(FILE *file)
 		if (op_func == NULL)
 		{
 			free_stack(&stack);
-			exit_status = unknown_op_error(op_toks[0], line_number);
+			exit_status = unknown_op_err(op_toks[0], line_number);
 			free_tokens();
 			break;
 		}
@@ -135,7 +137,7 @@ int run_monty(FILE *file)
 	if (line && *line == 0)
 	{
 		free(line);
-		return (mallloc_err());
+		return (malloc_err());
 	}
 	free(line);
 	return (exit_status);

@@ -3,6 +3,7 @@
 int usage_err(void);
 int malloc_err(void);
 int f_open_err(char *filename);
+int unknown_op_err(char *opcode, unsigned int line_number);
 int no_int_err(unsigned int line_number);
 /**
  * usage_err -prints usage error
@@ -33,7 +34,20 @@ int f_open_err(char *filename)
 	return (EXIT_FAILURE);
 }
 /**
- * no_int_error - Prints invalid monty_push argument error messages.
+ * unknown_op_err - Prints unknown instruction error messages.
+ * @opcode: Opcode where error occurred.
+ * @line_number: Line number in Monty bytecodes file where error occured.
+ *
+ * Return: (EXIT_FAILURE) always.
+ */
+int unknown_op_err(char *opcode, unsigned int line_number)
+{
+	fprintf(stderr, "L%u: unknown instruction %s\n",
+		line_number, opcode);
+	return (EXIT_FAILURE);
+}
+/**
+ * no_int_err - Prints invalid monty_push argument error messages.
  * @line_number: Line number in Monty bytecodes file where error occurred.
  * Return: EXIT_FAILURE always.
  */

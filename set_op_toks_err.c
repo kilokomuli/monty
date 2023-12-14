@@ -14,7 +14,7 @@ void set_op_tok_err(int error_code)
 	new_toks = malloc(sizeof(char *) * (toks_len + 2));
 	if (!op_toks)
 	{
-		malloc_error();
+		malloc_err();
 		return;
 	}
 	while (i < toks_len)
@@ -26,7 +26,7 @@ void set_op_tok_err(int error_code)
 	if (!exit_str)
 	{
 		free(new_toks);
-		malloc_error();
+		malloc_err();
 		return;
 	}
 	new_toks[i++] = exit_str;

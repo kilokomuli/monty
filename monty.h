@@ -45,11 +45,26 @@ typedef struct instruction_s
 int usage_err(void);
 int malloc_err(void);
 int f_open_err(char *filename);
+int unknown_op_err(char *opcode, unsigned int line_number);
+int no_int_err(unsigned int line_number);
 
+void free_tokens(void);
 unsigned int token_arr_len(void);
 int empty_line(char *line, char *delims);
 void (*get_op_func(char *opcode))(stack_t**, unsigned int);
 int run_monty(FILE *file);
 
 void set_op_tok_err(int error_code);
+
+/* stack helpers*/
+void free_stack(stack_t **stack);
+int init_stack(stack_t **stack);
+int check_mode(stack_t *stack);
+
+char **strtow(char *str, char *delims);
+char *get_int(int n);
+/* functions */
+void push(stack_t **stack, unsigned int line_number);
+void pall(stack_t **stack, unsigned int line_number);
+
 #endif
