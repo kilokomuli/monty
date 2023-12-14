@@ -5,6 +5,12 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+#define STACK 0
+#define QUEUE 1
+#define DELIMS " \n\t\a\b"
+
+extern char **op_toks;
+
 /**
  * struct stack_s - doubly linked list representation of a stack (or queue)
  * @n: integer
@@ -39,4 +45,11 @@ typedef struct instruction_s
 int usage_err(void);
 int malloc_err(void);
 int f_open_err(char *filename);
+
+unsigned int token_arr_len(void);
+int empty_line(char *line, char *delims);
+void (*get_op_func(char *opcode))(stack_t**, unsigned int);
+int run_monty(FILE *file);
+
+void set_op_tok_err(int error_code);
 #endif
