@@ -1,15 +1,13 @@
 #ifndef MONTY_H
 #define MONTY_H
 
+#define _GNU_SOURCE
 #include <stdio.h>
-#include <stdlib.h>
 #include <unistd.h>
-
-#define STACK 0
-#define QUEUE 1
-#define DELIMS " \n\t\a\b"
-
-extern char **op_toks;
+#include <string.h>
+#include <stdlib.h>
+#include <ctype.h>
+#include <stdarg.h>
 
 /**
  * struct stack_s - doubly linked list representation of a stack (or queue)
@@ -41,30 +39,46 @@ typedef struct instruction_s
         void (*f)(stack_t **stack, unsigned int line_number);
 } instruction_t;
 
-/*error messages and error codes*/
-int usage_err(void);
-int malloc_err(void);
-int f_open_err(char *filename);
-int unknown_op_err(char *opcode, unsigned int line_number);
-int no_int_err(unsigned int line_number);
+extern stack_t *head;
+typedef void (*op_func)(stack_t **, unsigned int);
 
-void free_tokens(void);
-unsigned int token_arr_len(void);
-int empty_line(char *line, char *delims);
-void (*get_op_func(char *opcode))(stack_t**, unsigned int);
-int run_monty(FILE *file);
+/*file operations*/
+void open_file(char *file_name);
+int parse_line(char *buffer, int line_number, int format);
+void read_file(FILE *);
+int len_chars(FILE *);
+void find_func(char *, char *, int, int);
 
-void set_op_tok_err(int error_code);
+/*Stack operations*/
+stack_t *create_node(int n);
+void free_nodes(void);
+void print_stack(stack_t **, unsigned int);
+void add_to_stack(stack_t **, unsigned int);
+void add_to_queue(stack_t **, unsigned int);
 
-/* stack helpers*/
-void free_stack(stack_t **stack);
-int init_stack(stack_t **stack);
-int check_mode(stack_t *stack);
+void call_fun(op_func, char *, char *, int, int);
 
-char **strtow(char *str, char *delims);
-char *get_int(int n);
-/* functions */
-void push(stack_t **stack, unsigned int line_number);
-void pall(stack_t **stack, unsigned int line_number);
+void print_top(stack_t **, unsigned int);
+void pop_top(stack_t **, unsigned int);
+void nop(stack_t **, unsigned int);
+void swap_nodes(stack_t **, unsigned int);
+
+/*Math operations with nodes*/
+void add_nodes(stack_t **, unsigned int);
+void sub_nodes(stack_t **, unsigned int);
+void div_nodes(stack_t **, unsigned int);
+void mul_nodes(stack_t **, unsigned int);
+void mod_nodes(stack_t **, unsigned int);
+
+/*String operations*/
+void print_char(stack_t **, unsigned int);
+void print_str(stack_t **, unsigned int);
+void rotl(stack_t **, unsigned int);
+
+/*Error hanlding*/
+void err(int error_code, ...);
+void more_err(int error_code, ...);
+void string_err(int error_code, ...);
+void rotr(stack_t **, unsigned int);
 
 #endif

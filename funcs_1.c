@@ -1,73 +1,76 @@
 #include "monty.h"
 
-void push(stack_t **stack, unsigned int line_number);
-void pall(stack_t **stack, unsigned int line_number);
+
 /**
- * push - inserts a value to a stack_t linked list
- * @stack: pointer to the head node of a stack_t linked list
- * @line_number: current working line number of a monty bytecode file
+ * add_to_stack - Adds a node to the stack.
+ * @new_node: Pointer to the new node.
+ * @ln: Interger representing the line number of of the opcode.
  */
-void push(stack_t **stack,unsigned int line_number)
+void add_to_stack(stack_t **new_node, __attribute__((unused))unsigned int ln)
 {
-	stack_t *temp, *new_node;
-	int i;
+	stack_t *tmp;
 
-	new_node = malloc(sizeof(stack_t));
-
-	if (new_node == NULL)
+	if (new_node == NULL || *new_node == NULL)
+		exit(EXIT_FAILURE);
+	if (head == NULL)
 	{
-		set_op_tok_err(malloc_err());
+		head = *new_node;
 		return;
 	}
-	if (op_toks[1] == NULL)
-	{
-		set_op_tok_err(no_int_err(line_number));
-		return;
-	}
-	for (i = 0; op_toks[1][i]; i++)
-	{
-		if (op_toks[1][i] == '-' && i == 0)
-			continue;
-		if (op_toks[1][i] < '0' || op_toks[1][i] > '9')
-		{
-			set_op_tok_err(no_int_err(line_number));
-			return;
-		}
-	}
-	new_node->n = atoi(op_toks[1]);
+	tmp = head;
+	head = *new_node;
+	head->next = tmp;
+	tmp->prev = head;
+}
 
-	if (check_mode(*stack) == STACK)
+
+/**
+ * print_stack - Adds a node to the stack.
+ * @stack: Pointer to a pointer pointing to top node of the stack.
+ * @line_number: line number of  the opcode.
+ */
+void print_stack(stack_t **stack, unsigned int line_number)
+{
+	stack_t *tmp;
+
+	(void) line_number;
+	if (stack == NULL)
+		exit(EXIT_FAILURE);
+	tmp = *stack;
+	while (tmp != NULL)
 	{
-		temp = (*stack)->next;
-		new_node->prev = *stack;
-		new_node->next = temp;
-		if (temp)
-			temp->prev = new_node;
-		(*stack)->next = new_node;
-	}
-	else
-	{
-		temp = *stack;
-		while (temp->next)
-			temp = temp->next;
-		new_node->prev = temp;
-		new_node->next = NULL;
-		temp->next = new_node;
+		printf("%d\n", tmp->n);
+		tmp = tmp->next;
 	}
 }
+
 /**
- * pall - prints the value of a stack_t linked list
- * @stack: pointer to the head node
- * @line_number: current working line number of a monty bytecode file
+ * pop_top - Adds a node to the stack.
+ * @stack: Pointer to a pointer pointing to top node of the stack.
+ * @line_number: Interger representing the line number of of the opcode.
  */
-void pall(stack_t **stack, unsigned int line_number)
+void pop_top(stack_t **stack, unsigned int line_number)
 {
-	stack_t *temp = (*stack)->next;
-	
-	while (temp)
-	{
-		printf("%d\n", temp->n);
-		temp = temp->next;
-	}
-	(void)line_number;
+	stack_t *tmp;
+
+	if (stack == NULL || *stack == NULL)
+		more_err(7, line_number);
+
+	tmp = *stack;
+	*stack = tmp->next;
+	if (*stack != NULL)
+		(*stack)->prev = NULL;
+	free(tmp);
+}
+
+/**
+ * print_top - Prints the top node of the stack.
+ * @stack: Pointer to a pointer pointing to top node of the stack.
+ * @line_number: Interger representing the line number of of the opcode.
+ */
+void print_top(stack_t **stack, unsigned int line_number)
+{
+	if (stack == NULL || *stack == NULL)
+		more_err(6, line_number);
+	printf("%d\n", (*stack)->n);
 }

@@ -1,32 +1,83 @@
 #include "monty.h"
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-
-char **op_toks = NULL;
+stack_t *head = NULL;
 
 /**
- * main - the entry point for monty
- * @argc: arguments count passed to the program
- * Return: EXIT_SUCCESS on success or EXIT_FAILURE on error
+ * main - entry point
+ * @argc: arguments count
+ * @argv: list of arguments
+ * Return: always 0
  */
+
 int main(int argc, char *argv[])
 {
-	FILE *file = NULL;
-	int exit_code =EXIT_SUCCESS;
-
 	if (argc != 2)
 	{
-		return (usage_err());
+		fprintf(stderr, "USAGE: monty file\n");
+		exit(EXIT_FAILURE);
 	}
-	file = fopen(argv[1], "r");
+	open_file(argv[1]);
+	free_nodes();
+	return (0);
+}
 
-	if (file == NULL)
+/**
+ * create_node - Creates a node.
+ * @n: Number to go inside the node.
+ * Return: Upon sucess a pointer to the node. Otherwise NULL.
+ */
+stack_t *create_node(int n)
+{
+	stack_t *node;
+
+	node = malloc(sizeof(stack_t));
+	if (node == NULL)
+		err(4);
+	node->next = NULL;
+	node->prev = NULL;
+	node->n = n;
+	return (node);
+}
+
+/**
+ * free_nodes - Frees nodes in the stack.
+ */
+void free_nodes(void)
+{
+	stack_t *tmp;
+
+	if (head == NULL)
+		return;
+
+	while (head != NULL)
 	{
-		return (f_open_err(argv[1]));
+		tmp = head;
+		head = head->next;
+		free(tmp);
 	}
-	exit_code = run_monty(file);
-	fclose(file);
+}
 
-	return (exit_code);
+
+/**
+ * add_to_queue - Adds a node to the queue.
+ * @new_node: Pointer to the new node.
+ * @ln: line number of the opcode.
+ */
+void add_to_queue(stack_t **new_node, __attribute__((unused))unsigned int ln)
+{
+	stack_t *tmp;
+
+	if (new_node == NULL || *new_node == NULL)
+		exit(EXIT_FAILURE);
+	if (head == NULL)
+	{
+		head = *new_node;
+		return;
+	}
+	tmp = head;
+	while (tmp->next != NULL)
+		tmp = tmp->next;
+
+	tmp->next = *new_node;
+	(*new_node)->prev = tmp;
+
 }

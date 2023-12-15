@@ -1,144 +1,160 @@
 #include "monty.h"
-#include <string.h>
-#include <stdio.h>
-
-void free_tokens(void);
-unsigned int token_arr_len(void);
-int empty_line(char *line, char *delims);
-void (*get_op_func(char *opcode))(stack_t**, unsigned int);
-int run_monty(FILE *file);
 
 /**
- * free_tokens - Frees the global op_toks array of strings.
+ * open_file - opens a file
+ * @file_name: the file namepath
+ * Return: void
  */
-void free_tokens(void)
-{
-	size_t i = 0;
 
-	if (op_toks == NULL)
+void open_file(char *file_name)
+{
+	FILE *fd = fopen(file_name, "r");
+
+	if (file_name == NULL || fd == NULL)
+		err(2, file_name);
+
+	read_file(fd);
+	fclose(fd);
+}
+
+
+/**
+ * read_file - reads a file
+ * @fd: pointer to file descriptor
+ * Return: void
+ */
+
+void read_file(FILE *fd)
+{
+	int line_number, format = 0;
+	char *buffer = NULL;
+	size_t len = 0;
+
+	for (line_number = 1; getline(&buffer, &len, fd) != -1; line_number++)
+	{
+		format = parse_line(buffer, line_number, format);
+	}
+	free(buffer);
+}
+
+
+/**
+ * parse_line - Separates each line into tokens to determine
+ * which function to call
+ * @buffer: line from the file
+ * @line_number: line number
+ * @format:  storage format. If 0 Nodes will be entered as a stack.
+ * if 1 nodes will be entered as a queue.
+ * Return: Returns 0 if the opcode is stack. 1 if queue.
+ */
+
+int parse_line(char *buffer, int line_number, int format)
+{
+	char *opcode, *value;
+	const char *delim = "\n ";
+
+	if (buffer == NULL)
+		err(4);
+
+	opcode = strtok(buffer, delim);
+	if (opcode == NULL)
+		return (format);
+	value = strtok(NULL, delim);
+
+	if (strcmp(opcode, "stack") == 0)
+		return (0);
+	if (strcmp(opcode, "queue") == 0)
+		return (1);
+
+	find_func(opcode, value, line_number, format);
+	return (format);
+}
+
+/**
+ * find_func - find the appropriate function for the opcode
+ * @opcode: opcode
+ * @value: argument of opcode
+ * @format:  storage format. If 0 Nodes will be entered as a stack.
+ * @ln: line number
+ * if 1 nodes will be entered as a queue.
+ * Return: void
+ */
+void find_func(char *opcode, char *value, int ln, int format)
+{
+	int i;
+	int flag;
+
+	instruction_t func_list[] = {
+		{"push", add_to_stack},
+		{"pall", print_stack},
+		{"pint", print_top},
+		{"pop", pop_top},
+		{"nop", nop},
+		{"swap", swap_nodes},
+		{"add", add_nodes},
+		{"sub", sub_nodes},
+		{"div", div_nodes},
+		{"mul", mul_nodes},
+		{"mod", mod_nodes},
+		{"pchar", print_char},
+		{"pstr", print_str},
+		{"rotl", rotl},
+		{"rotr", rotr},
+		{NULL, NULL}
+	};
+
+	if (opcode[0] == '#')
 		return;
 
-	for (i = 0; op_toks[i]; i++)
-		free(op_toks[i]);
-
-	free(op_toks);
-}
-/**
- * token_arr_len - Gets the length of current op_toks
- * Return: Length of current op_toks
- */
-unsigned int token_arr_len(void)
-{
-	unsigned int toks_len = 0;
-
-	while (op_toks[toks_len])
-		toks_len++;
-	return (toks_len);
-}
-/**
- * empty_line - Checks if a line read from getline only contains delimiters
- * @line: pointer to the line
- * @delims: string of delimeter characters
- * Return: 1 or 0
- */
-int empty_line(char *line, char *delims)
-{
-	int i, j;
-
-	for (i = 0; line[i]; i++)
+	for (flag = 1, i = 0; func_list[i].opcode != NULL; i++)
 	{
-		for (j = 0; delims[j]; j++)
+		if (strcmp(opcode, func_list[i].opcode) == 0)
 		{
-			if (line[i] == delims[j])
-				break;
+			call_fun(func_list[i].f, opcode, value, ln, format);
+			flag = 0;
 		}
-		if (delims[j] == '\0')
-			return (0);
 	}
-	return (1);
+	if (flag == 1)
+		err(3, ln, opcode);
 }
+
+
 /**
- * get_op_func - matches an opcode with its corresponding function
- * @opcode: opcode to match
- * Return: pointer to the corresponding function
+ * call_fun - Calls the required function.
+ * @func: Pointer to the function that is about to be called.
+ * @op: string representing the opcode.
+ * @val: string representing a numeric value.
+ * @ln: line numeber for the instruction.
+ * @format: Format specifier. If 0 Nodes will be entered as a stack.
+ * if 1 nodes will be entered as a queue.
  */
-void (*get_op_func(char *opcode))(stack_t**, unsigned int)
+void call_fun(op_func func, char *op, char *val, int ln, int format)
 {
-	instruction_t op_funcs[] = {
-		{"push", push},
-		{"pall", pall},
-	};
+	stack_t *node;
+	int flag;
 	int i;
 
-	for (i = 0; op_funcs[i].opcode; i++)
+	flag = 1;
+	if (strcmp(op, "push") == 0)
 	{
-		if (strcmp(opcode, op_funcs[i].opcode) == 0)
-			return (op_funcs[i].f);
+		if (val != NULL && val[0] == '-')
+		{
+			val = val + 1;
+			flag = -1;
+		}
+		if (val == NULL)
+			err(5, ln);
+		for (i = 0; val[i] != '\0'; i++)
+		{
+			if (isdigit(val[i]) == 0)
+				err(5, ln);
+		}
+		node = create_node(atoi(val) * flag);
+		if (format == 0)
+			func(&node, ln);
+		if (format == 1)
+			add_to_queue(&node, ln);
 	}
-	return (NULL);
-}
-
-/**
- * run_monty - primary function to execute a monty bytecodes script
- * @file: file descriptor for an open monty bytecodes script
- *
- * Return: EXIT_SUCCESS on success, EXIT_FAILURE on failure
- */
-int run_monty(FILE *file)
-{
-	stack_t *stack = NULL;
-	char *line = NULL;
-	size_t len = 0, exit_status = EXIT_SUCCESS;
-	unsigned int line_number = 0, prevtok_len = 0;
-	void (*op_func)(stack_t**, unsigned int);
-
-	if (init_stack(&stack) == EXIT_FAILURE)
-		return (EXIT_FAILURE);
-	while (getline(&line, &len, file) != -1)
-	{
-		line_number++;
-		op_toks = strtow(line, DELIMS);
-		if (op_toks == NULL)
-		{
-			if (empty_line(line, DELIMS))
-				continue;
-			free_stack(&stack);
-			return (malloc_err());
-		}
-		else if (op_toks[0][0] == '#')
-		{
-			free_tokens();
-			continue;
-		}
-		op_func = get_op_func(op_toks[0]);
-		if (op_func == NULL)
-		{
-			free_stack(&stack);
-			exit_status = unknown_op_err(op_toks[0], line_number);
-			free_tokens();
-			break;
-		}
-		prevtok_len = token_arr_len();
-		op_func(&stack, line_number);
-		if (token_arr_len() != prevtok_len)
-		{
-			if (op_toks && op_toks[prevtok_len])
-				exit_status = atoi(op_toks[prevtok_len]);
-			else
-
-				exit_status = EXIT_FAILURE;
-			free_tokens();
-			break;
-		}
-		free_tokens();
-	}
-	free_stack(&stack);
-
-	if (line && *line == 0)
-	{
-		free(line);
-		return (malloc_err());
-	}
-	free(line);
-	return (exit_status);
+	else
+		func(&head, ln);
 }

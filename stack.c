@@ -1,65 +1,44 @@
 #include "monty.h"
-#include <string.h>
-
-void free_stack(stack_t **stack);
-int init_stack(stack_t **stack);
-int check_mode(stack_t *stack);
 
 /**
- * free_stack - traverses the stack, freeing ech node
- * @stack: pointer to the top of stack
- * or bottom of que of a stackk_t.
- *
+ * mul_nodes - Adds the top two elements of the stack.
+ * @stack: Pointer to a pointer pointing to top node of the stack.
+ * @line_number: Interger representing the line number of of the opcode.
  */
-void free_stack(stack_t **stack)
+void mul_nodes(stack_t **stack, unsigned int line_number)
 {
-	stack_t *current = *stack;
-	stack_t *tmp;
+	int sum;
 
-	while (current != NULL)
-	{
-		tmp = current->next;
-		free(current);
-		current = tmp;
-	}
-	*stack = NULL;
+	if (stack == NULL || *stack == NULL || (*stack)->next == NULL)
+		more_err(8, line_number, "mul");
+
+	(*stack) = (*stack)->next;
+	sum = (*stack)->n * (*stack)->prev->n;
+	(*stack)->n = sum;
+	free((*stack)->prev);
+	(*stack)->prev = NULL;
 }
+
+
 /**
- * init_stack - initializes stack_t stack withbeginnning stack
- * and ending queue nodes
- * @stack: pointer to an unitialized stack_t stack
- * Return: if an error occurs EXIT_FAILURE or EXIT_SUCCESS
+ * mod_nodes - Adds the top two elements of the stack.
+ * @stack: Pointer to a pointer pointing to top node of the stack.
+ * @line_number: Interger representing the line number of of the opcode.
  */
-int init_stack(stack_t **stack)
+void mod_nodes(stack_t **stack, unsigned int line_number)
 {
-	stack_t *s;
+	int sum;
 
-	s = malloc(sizeof(stack_t));
-	if (s == NULL)
-		return (malloc_err());
+	if (stack == NULL || *stack == NULL || (*stack)->next == NULL)
 
-	s->n = STACK;
-	s->prev = NULL;
-	s->next = NULL;
+		more_err(8, line_number, "mod");
 
-	*stack = s;
 
-	return (EXIT_SUCCESS);
-}
-/**
- * check_mode - Checks if a stack_t linked list is in stack or queue mode.
- * @stack: A pointer to the top (stack) or bottom (queue)
- *         of a stack_t linked list.
- *
- * Return: If the stack_t is in stack mode - STACK (0).
- *         If the stack_t is in queue mode - QUEUE (1).
- *         Otherwise - 2.
- */
-int check_mode(stack_t *stack)
-{
-	if (stack->n == STACK)
-		return (STACK);
-	else if (stack->n == QUEUE)
-		return (QUEUE);
-	return (2);
+	if ((*stack)->n == 0)
+		more_err(9, line_number);
+	(*stack) = (*stack)->next;
+	sum = (*stack)->n % (*stack)->prev->n;
+	(*stack)->n = sum;
+	free((*stack)->prev);
+	(*stack)->prev = NULL;
 }

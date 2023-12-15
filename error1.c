@@ -1,58 +1,116 @@
 #include "monty.h"
 
-int usage_err(void);
-int malloc_err(void);
-int f_open_err(char *filename);
-int unknown_op_err(char *opcode, unsigned int line_number);
-int no_int_err(unsigned int line_number);
 /**
- * usage_err -prints usage error
- * Return: EXIT_FAULURE always
+ * err - Prints appropiate error messages determined by their error code.
+ * @error_code: The error codes are the following:
+ * (1) => The user does not give any file or more than one file to the program.
+ * (2) => The file provided is not a file that can be opened or read.
+ * (3) => The file provided contains an invalid instruction.
+ * (4) => When the program is unable to malloc more memory.
+ * (5) => When the parameter passed to the instruction "push" is not an int.
+ * (6) => When the stack it empty for pint.
+ * (7) => When the stack it empty for pop.
+ * (8) => When stack is too short for operation.
  */
-int usage_err(void)
+void err(int error_code, ...)
 {
-	fprintf(stderr, "USAGE: monty file\n");
-	return (EXIT_FAILURE);
+	va_list ag;
+	char *op;
+	int l_num;
+
+	va_start(ag, error_code);
+	switch (error_code)
+	{
+		case 1:
+			fprintf(stderr, "USAGE: monty file\n");
+			break;
+		case 2:
+			fprintf(stderr, "Error: Can't open file %s\n",
+				va_arg(ag, char *));
+			break;
+		case 3:
+			l_num = va_arg(ag, int);
+			op = va_arg(ag, char *);
+			fprintf(stderr, "L%d: unknown instruction %s\n", l_num, op);
+			break;
+		case 4:
+			fprintf(stderr, "Error: malloc failed\n");
+			break;
+		case 5:
+			fprintf(stderr, "L%d: usage: push integer\n", va_arg(ag, int));
+			break;
+		default:
+			break;
+	}
+	free_nodes();
+	exit(EXIT_FAILURE);
 }
+
 /**
- * malloc - prints malloc error message
- * Return : EXIT_FAILURE
+ * more_err - handles errors.
+ * @error_code: The error codes are the following:
+ * (6) => When the stack it empty for pint.
+ * (7) => When the stack it empty for pop.
+ * (8) => When stack is too short for operation.
+ * (9) => Division by zero.
  */
-int malloc_err(void)
+void more_err(int error_code, ...)
 {
-	fprintf(stderr, "Error: malloc failed\n");
-	return (EXIT_FAILURE);
+	va_list ag;
+	char *op;
+	int l_num;
+
+	va_start(ag, error_code);
+	switch (error_code)
+	{
+		case 6:
+			fprintf(stderr, "L%d: can't pint, stack empty\n",
+				va_arg(ag, int));
+			break;
+		case 7:
+			fprintf(stderr, "L%d: can't pop an empty stack\n",
+				va_arg(ag, int));
+			break;
+		case 8:
+			l_num = va_arg(ag, unsigned int);
+			op = va_arg(ag, char *);
+			fprintf(stderr, "L%d: can't %s, stack too short\n", l_num, op);
+			break;
+		case 9:
+			fprintf(stderr, "L%d: division by zero\n",
+				va_arg(ag, unsigned int));
+			break;
+		default:
+			break;
+	}
+	free_nodes();
+	exit(EXIT_FAILURE);
 }
+
 /**
- * f_open_err - prints file opening error messages with filename
- * @filename: Name of file failed to open
- * Return: EXIT_FAILURE
+ * string_err - handles errors.
+ * @error_code: The error codes are the following:
+ * (10) ~> The number inside a node is outside ASCII bounds.
+ * (11) ~> The stack is empty.
  */
-int f_open_err(char *filename)
+void string_err(int error_code, ...)
 {
-	fprintf(stderr, "Error: Can't open file %s\n", filename);
-	return (EXIT_FAILURE);
-}
-/**
- * unknown_op_err - Prints unknown instruction error messages.
- * @opcode: Opcode where error occurred.
- * @line_number: Line number in Monty bytecodes file where error occured.
- *
- * Return: (EXIT_FAILURE) always.
- */
-int unknown_op_err(char *opcode, unsigned int line_number)
-{
-	fprintf(stderr, "L%u: unknown instruction %s\n",
-		line_number, opcode);
-	return (EXIT_FAILURE);
-}
-/**
- * no_int_err - Prints invalid monty_push argument error messages.
- * @line_number: Line number in Monty bytecodes file where error occurred.
- * Return: EXIT_FAILURE always.
- */
-int no_int_err(unsigned int line_number)
-{
-	fprintf(stderr, "L%u: usage: push integer\n", line_number);
-	return (EXIT_FAILURE);
+	va_list ag;
+	int l_num;
+
+	va_start(ag, error_code);
+	l_num = va_arg(ag, int);
+	switch (error_code)
+	{
+		case 10:
+			fprintf(stderr, "L%d: can't pchar, value out of range\n", l_num);
+			break;
+		case 11:
+			fprintf(stderr, "L%d: can't pchar, stack empty\n", l_num);
+			break;
+		default:
+			break;
+	}
+	free_nodes();
+	exit(EXIT_FAILURE);
 }
