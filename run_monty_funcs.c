@@ -66,12 +66,12 @@ int parse_line(char *buffer, int line_number, int format)
 	if (strcmp(opcode, "queue") == 0)
 		return (1);
 
-	find_func(opcode, value, line_number, format);
+	get_opcodes(opcode, value, line_number, format);
 	return (format);
 }
 
 /**
- * find_func - find the appropriate function for the opcode
+ * get_opcodes - gets the appropriate function for the opcodes
  * @opcode: opcode
  * @value: argument of opcode
  * @format:  storage format. If 0 Nodes will be entered as a stack.
@@ -79,15 +79,15 @@ int parse_line(char *buffer, int line_number, int format)
  * if 1 nodes will be entered as a queue.
  * Return: void
  */
-void find_func(char *opcode, char *value, int ln, int format)
+void get_opcodes(char *opcode, char *value, int ln, int format)
 {
 	int i;
 	int flag;
 
 	instruction_t func_list[] = {
-		{"push", add_to_stack},
-		{"pall", print_stack},
-		{"pint", print_top},
+		{"push", push_opcode},
+		{"pall", pall_opcode},
+		{"pint", pint_opcode},
 		{"pop", pop_top},
 		{"nop", nop},
 		{"swap", swap_nodes},
